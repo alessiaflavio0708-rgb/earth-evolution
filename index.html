@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Earth Evolution · Eoarcheano</title>
+<style>
+:root{--bg:#050709;--card:rgba(12,18,25,.9);--line:#1d2a37;--tx:#e2e8f0;--mu:#8fa1b3;--ac:#7dd3fc;--ok:#4ade80}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{background:var(--bg);min-height:100%}
+body{color:var(--tx);font:14px/1.5 system-ui,sans-serif;padding:10px;max-width:1560px;margin:auto;min-height:100vh}
+#bgocean{position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:-1;pointer-events:none}
+header{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px;margin-bottom:4px}
+.title{font-size:1.7rem;font-weight:700;line-height:1.2}
+.subtitle{color:var(--mu);font-size:.95rem}
+.mu{color:var(--mu);font-size:.8rem}
+#date{font-weight:700;color:var(--ac);font-size:2rem;line-height:1.1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+h3{font-size:.85rem;color:var(--mu);font-weight:600;margin-bottom:6px}
+.guide ol{padding-left:20px;margin:4px 0 8px}
+.guide li{margin:3px 0}
+#now{margin:0 0 8px;padding:10px 12px;border-radius:10px;background:rgba(18,32,44,.92);border-left:4px solid var(--ac);font-size:.95rem}
+#bar{position:relative;height:10px;background:#142130;border-radius:5px;margin:14px 0 8px}
+#bar i{display:block;height:100%;width:0;border-radius:5px;background:linear-gradient(90deg,#f97316,#7dd3fc)}
+#bar b{position:absolute;top:-4px;width:2px;height:18px;background:#fff8;transform:translateX(-1px)}
+#bar span{position:absolute;top:-18px;font-size:.66rem;color:var(--mu);transform:translateX(-50%);white-space:nowrap}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}
+button{background:#16222d;color:var(--tx);border:1px solid #2a3a48;border-radius:8px;padding:7px 11px;cursor:pointer;font-size:.82rem}
+button:hover:not(:disabled){background:#1d2f3f}
+button:disabled{opacity:.4;cursor:default}
+.wrap{display:grid;grid-template-columns:minmax(230px,1fr) minmax(0,3.2fr) minmax(230px,1fr);gap:10px;align-items:start;margin-top:8px}
+.col{display:flex;flex-direction:column;gap:10px}
+.center{order:0}
+.bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+#view{position:relative;width:100%;height:clamp(380px,66vh,780px);border-radius:10px;overflow:hidden;background:#02040a;cursor:pointer}
+#view canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#view::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,.4))}
+#hud{position:absolute;left:8px;top:8px;background:rgba(2,4,10,.6);padding:4px 9px;border-radius:6px;font-size:12px;color:#cbd5e1;pointer-events:none;z-index:2}
+#energy{position:absolute;right:12px;bottom:12px;z-index:6;pointer-events:none;background:rgba(4,8,14,.78);backdrop-filter:blur(6px);padding:8px 14px;border-radius:12px;border:1px solid rgba(125,211,252,.25);text-align:right;min-width:150px}
+#energy .lab{font-size:.75rem;color:var(--mu);letter-spacing:.04em;text-transform:uppercase}
+#energy #ebar{display:block;font-size:1.9rem;font-weight:700;color:var(--ac);line-height:1.1}
+#energy #ebar small{font-size:.95rem;font-weight:600;color:var(--mu);margin-left:2px}
+#energy #erate{display:block;font-size:.85rem;color:#86efac;margin-top:2px}
+.lbl{position:absolute;transform:translate(-50%,-120%);font-size:11px;color:#e2e8f0;background:rgba(8,12,18,.7);padding:1px 6px;border-radius:6px;pointer-events:none;white-space:nowrap;z-index:2}
+#tip{position:absolute;pointer-events:none;background:rgba(8,14,22,.94);border:1px solid var(--ac);border-radius:8px;padding:6px 9px;font-size:12px;max-width:270px;z-index:5}
+#tip b{display:block;font-size:13px;margin-bottom:2px}
+.chip{display:inline-block;background:#142130;border-radius:6px;padding:2px 7px;margin:2px;font-size:.78rem}
+.env div{font-size:.82rem;margin:3px 0;color:var(--mu)}
+.env b{color:var(--tx)}
+.ok{color:var(--ok)}
+#log div{font-size:.8rem;margin:3px 0;color:#c3cfdb}
+#log small{color:var(--mu)}
+.ref div{font-size:.8rem;margin:4px 0;color:#c3cfdb}
+details{margin-top:10px}
+summary{cursor:pointer;font-size:.85rem;color:var(--mu)}
+details p{font-size:.8rem;color:#b6c4d2;margin:6px 0}
+#end{position:fixed;inset:0;background:#000d;display:flex;align-items:center;justify-content:center;z-index:9;padding:16px}
+#end>div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;max-width:560px;max-height:90vh;overflow:auto}
+#end h2{margin-bottom:8px}
+#toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#16222def;padding:8px 16px;border-radius:20px;font-size:.85rem;opacity:0;transition:.3s;pointer-events:none;max-width:92vw;text-align:center;z-index:10}
+.left, .right{position:sticky;top:10px;align-self:start;max-height:calc(100vh - 20px);overflow:auto;padding-right:2px;scrollbar-width:thin;scrollbar-color:#2a3a48 transparent}
+.left .card, .right .card{margin:0;width:100%}
+.left h3, .right h3{margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+#goals div{font-size:.82rem;line-height:1.35;padding:3px 0;border-bottom:1px dashed rgba(255,255,255,.05)}
+#goals div:last-child{border-bottom:none}
+.env{display:grid;grid-template-columns:1fr;gap:0}
+.env > div{font-size:.82rem;margin:0;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.05)}
+.env > div:last-child{border-bottom:none}
+@media(max-width:1000px){
+  .left, .right{position:static;max-height:none;overflow:visible}
+  .wrap{grid-template-columns:1fr}
+  .center{order:-1}
+  .bottom{grid-template-columns:1fr}
+  #view{height:clamp(320px,56vh,600px)}
+  .title{font-size:1.4rem}
+  #date{font-size:1.6rem}
+}
+</style>
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.163.0/build/three.module.js" } }
+</script>
+</head>
+<body>
+<canvas id="bgocean"></canvas>
+
+<header>
+  <div>
+    <div class="title">🌍 Earth Evolution</div>
+    <div class="subtitle">Eoarcheano · da 4,031 a 3,600 miliardi di anni fa</div>
+  </div>
+  <div id="date"></div>
+</header>
+
+<section class="card guide" id="guide" style="margin-top:8px">
+  <h3>Come si gioca</h3>
+  <ol>
+    <li>Il tempo scorre da solo. Il Sole è più debole di oggi, ma la CO₂ e il metano tengono il pianeta caldo: osserva come cambiano insieme.</li>
+    <li>Passa il mouse sul paesaggio per capire cosa rappresenta ogni elemento. Cliccalo per agire.</li>
+    <li>L'energia (E) cresce da sola. Le azioni costano energia oppure hanno una <b>ricarica</b>. L'impianto geotermico la fa crescere più in fretta.</li>
+    <li>Obiettivo: arrivare a 3,600 miliardi di anni fa con la chimica pronta per la vita (riquadro Obiettivi).</li>
+  </ol>
+  <button id="gclose">Ho capito</button>
+</section>
+
+<div class="wrap">
+
+  <aside class="col left">
+    <section class="card">
+      <h3>Obiettivi per 3,600 Ga</h3>
+      <div id="goals"></div>
+    </section>
+
+    <section class="card env">
+      <h3>Ambiente (passa il mouse per il significato)</h3>
+      <div id="env"></div>
+    </section>
+  </aside>
+
+  <main class="col center">
+    <section class="card">
+      <div id="now"></div>
+      <div id="bar"><i></i></div>
+      <div id="view">
+        <div id="hud"></div>
+        <div id="tip" hidden></div>
+        <div id="energy"><div class="lab">Energia</div><span id="ebar"></span><span id="erate"></span></div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="col right">
+    <section class="card">
+      <h3>Materiali accumulati</h3>
+      <div id="pool"></div>
+    </section>
+
+    <section class="card">
+      <h3>Azioni</h3>
+      <div class="row">
+        <button id="bV0">🌋 Vulcano: Nord</button>
+        <button id="bV1">🌋 Vulcano: Centro</button>
+        <button id="bV2">🌋 Vulcano: Sud</button>
+      </div>
+      <div class="row">
+        <button id="bMet" title="Costa 15 E">☄️ Meteorite (15 E)</button>
+        <button id="bGeo" title="Aumenta l'energia passiva">⚡ Impianto geotermico</button>
+      </div>
+      <div class="row">
+        <button id="bStorm" title="Costa 5 E">⛈️ Temporale (5 E)</button>
+      </div>
+      <div class="row">
+        <button id="bFeed" title="Costa 10 E. Servono microbi già comparsi">🦠 Nutri i microbi (10 E)</button>
+        <button id="bFix" title="Costa 10 E. Disponibile fino a 3,7 Ga">🧬 Fissazione biologica N (10 E)</button>
+      </div>
+      <p class="mu" style="margin-top:6px">Un'eruzione triplica per 10 milioni di anni il degassamento dal mantello. Un meteorite fornisce ferro, silice e composti organici.</p>
+    </section>
+  </aside>
+</div>
+
+<div class="bottom">
+  <section class="card">
+    <h3>Cosa succede</h3>
+    <div id="log"></div>
+  </section>
+
+  <section class="card ref">
+    <h3>Riferimenti reali sulla linea del tempo</h3>
+    <div id="refs"></div>
+  </section>
+</div>
+
+<details class="card"><summary>Modelli e fonti (leggi per capire cosa è certo e cosa no)</summary>
+<p><b>Sole giovane.</b> Luminosità L = 1/(1+0,4·(1−t/4,567)), con t = età del Sole in Ma. Circa il 74% di quella attuale a 4 Ga (Sagan &amp; Mullen 1972).</p>
+<p><b>Temperatura.</b> Temperatura di emissione 255·L^¼ K, più l'effetto serra: ~5,8 K per ogni raddoppio di CO₂ (logaritmico), più un contributo logaritmico del CH₄ (Pavlov et al. 2000), meno un raffreddamento della foschia organica. Il risultato è ~5–25 °C, coerente con le stime di climi antichi.</p>
+<p><b>Termostato di Walker.</b> La CO₂ è rimossa dall'erosione dei silicati (Walker, Hays &amp; Kasting 1981): più il clima è caldo, più l'erosione è veloce. Il mantello più caldo emette più CO₂.</p>
+<p><b>Vulcani komatiitici.</b> Le komatiiti erano più fluide dei basalti di oggi. Durante l'eruzione il gioco mostra solo lapilli e cenere: è una rappresentazione del fenomeno, non una ricostruzione misurata.</p>
+<p><b>Sorgenti idrotermali.</b> Le sorgenti sul fondale (black smoker) emettono fluidi caldi ricchi di solfuri metallici in modo continuo, fornendo elementi nutritivi essenziali.</p>
+<p><b>Geyser.</b> Il geyser è un'emissione di acqua calda autonoma; la silice che si deposita forma la sinterite attorno alla pozza.</p>
+<p><b>Oceano primordiale.</b> Lo sfondo mostra organismi ispirati a forme plausibili per l'Eoarcheano: protocellule con ciglia, catene di cianobatteri, amebe e microbi. Sono illustrazioni, non prove di specie reali.</p>
+<p><b>Meteoriti.</b> Gli impatti di corpi ferrosi e condritici erano frequenti nell'Eoarcheano e portavano ferro, fosforo, silice e composti organici semplici (come nelle condriti carbonacee). Il cratere e l'onda d'urto sono una rappresentazione del fenomeno.</p>
+<p><b>Giorno e marea.</b> La rotazione reale del primo Eoarcheano durava circa 13 ore, e la Luna era più vicina, quindi le maree erano più forti e si muovono autonomamente nel ciclo del tempo.</p>
+<p><b>Acidità.</b> Il pH del mare deriva dalla CO₂ disciolta, tra circa 6 e 7,5.</p>
+<p><b>Ferro e silice.</b> Senza ossigeno il ferro resta disciolto come Fe²⁺ e precipita con la silice formando le formazioni ferrifere a bande (BIF), come a Isua, circa 3,8 Ga.</p>
+<p><b>Bombardamento tardivo.</b> Il flusso di grandi impatti è più alto attorno a 3,95 Ga. Il picco e la sua durata sono ipotesi dibattute.</p>
+<p><b>Vita.</b> Il gioco simula microbi metanogeni (CO₂ + 4H₂ → CH₄ + 2H₂O). La comparsa è una probabilità, non una garanzia. Le prime prove di vita sono controverse (Isua: Nutman et al. 2016); stromatoliti sicure sono a 3,48 Ga.</p>
+<p><b>Chimica.</b> Le sintesi organiche richiedono gas riducenti e fulmini o UV, come negli esperimenti di Miller (1953). La via cianosolfidica (Patel et al. 2015) è rappresentata in modo semplificato.</p>
+<p><b>Risorse passive.</b> Le risorse crescono in modo continuo per rendere il gioco completabile in 30 minuti: è un aiuto di gioco, non un processo geologico misurato. Il termostato assistito mantiene la temperatura in un intervallo abitabile.</p>
+<p><b>Stime incerte.</b> Durata del giorno, distanza della Luna, flusso di CH₄ e H₂, comparsa della vita. Il gioco usa valori centrali.</p>
+<p><b>Semplificazioni.</b> Le quantità dei materiali sono unità di gioco. Le pressioni sono in bar. I tassi di reazione non sono ancora bilanciati. Il paesaggio è una rappresentazione dei fenomeni, non una ricostruzione misurata.</p>
+</details>
+
+<div id="end" hidden><div>
+  <h2 id="endh"></h2>
+  <div id="endtxt" class="mu"></div><br>
+  <button id="go2">Continua</button>
+</div></div>
+<div id="toast"></div>
+
+<script type="module">
+import * as THREE from 'three';
+
+/* ================= COSTANTI E STATO DI GIOCO ================= */
+const $=s=>document.querySelector(s),clamp=(x,a,b)=>Math.min(b,Math.max(a,x)),rnd=(a,b)=>a+Math.random()*(b-a),lerp=(a,b,t)=>a+(b-a)*t;
+const sstep=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)};
+const T0=4031,T1=3600,SPAN=431,DUR=1800,AGE0=4567,KEY='earth-evolution-eoarcheano-v5',W=800,H=380;
+const DAY_S=120;
+const GEO_COST=[30,60,90];
+const VOLC=[{n:'Vulcano Nord',f:.2},{n:'Vulcano Centro',f:.5},{n:'Vulcano Sud',f:.8}];
+const REF=[
+ [4030,'🪨 4,03 Ga: gneiss di Acasta, tra le rocce più antiche conosciute.'],
+ [3950,'☄️ ~3,95 Ga: picco ipotetico del Bombardamento Tardivo (dibattuto).'],
+ [3800,'🪨 ~3,8 Ga: formazioni ferrifere a bande di Isua: ferro e silice precipitano dal mare.'],
+ [3700,'🧬 ~3,7 Ga: possibili microfossili di Isua (controversi). Limite della fissazione biologica N nel gioco.'],
+ [3600,'🏁 3,6 Ga: fine dell\'Eoarcheano.']
+];
+const CD={};
+let LASTV=0,saveT=0,last=performance.now(),tt,stormV=0,flashA=0;
+
+const def=()=>({T:T0,paused:false,done:false,ok:false,tut:false,dayPh:.22,craters:[],geoLv:0,
+  co2:.28,ch4:.003,h2:.002,nh3:.0002,n2:.8,
+  org:10,pep:0,nuc:0,ves:0,proto:0,fe:20,si:40,p:3,bif:0,
+  land:.05,bio:0,boost:0,acc:0,E:20,habT:0,tot:0,nErupt:0,
+  ev:{},seen:{},F:{lava:0,storm:0,bolt:0,aur:0,tsu:0},log:[]});
+function load(){try{const j=JSON.parse(localStorage.getItem(KEY));return j?Object.assign(def(),j):def()}catch(x){return def()}}
+let S=load();
+const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
+const logm=t=>{S.log.unshift({T:S.T,t});S.log.length=Math.min(S.log.length,60)};
+const ev=(k,msg,always)=>{const n=S.ev[k]=(S.ev[k]||0)+1;if(msg&&(n===1||always))logm(msg)};
+const ga=T=>(T/1000).toFixed(3).replace('.',',')+' Ga';
+const fmt=x=>x>=10?Math.round(x):x.toFixed(1);
+const fmtP=x=>x>=.01?x.toFixed(2)+' bar':Math.round(x*1000*10)/10+' mbar';
+function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity=1;clearTimeout(tt);tt=setTimeout(()=>t.style.opacity=0,2200)}
+function cool(k,s){if(CD[k]>0){toast('Ricarica: '+Math.ceil(CD[k])+' s');return false}CD[k]=s;return true}
+
+/* ================= SFONDO: OCEANO PRIMORDIALE ================= */
+const BGC=$('#bgocean'),bgx=BGC.getContext('2d');
+const ORG_TYPES=['cell','filament','ameba','microbe'];
+const ZONE=.44;
+let BGW=1,BGH=1,BG_DPR=1,BG_STATIC=null,BGORG=[],BGSNOW=[];
+function mkBgStatic(){
+  const c=document.createElement('canvas');c.width=Math.round(BGW*BG_DPR);c.height=Math.round(BGH*BG_DPR);
+  const x=c.getContext('2d');x.setTransform(BG_DPR,0,0,BG_DPR,0,0);
+  const g=x.createLinearGradient(0,0,0,BGH);
+  g.addColorStop(0,'#0b3442');g.addColorStop(.55,'#071d2a');g.addColorStop(1,'#030c14');
+  x.fillStyle=g;x.fillRect(0,0,BGW,BGH);
+  const v=x.createRadialGradient(BGW*.3,BGH*.45,BGH*.2,BGW*.3,BGH*.45,BGW*.8);
+  v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.45)');
+  x.fillStyle=v;x.fillRect(0,0,BGW,BGH);
+  return c;
+}
+function bgResize(){
+  BGW=innerWidth;BGH=innerHeight;BG_DPR=Math.min(devicePixelRatio||1,1.5);
+  BGC.width=Math.round(BGW*BG_DPR);BGC.height=Math.round(BGH*BG_DPR);
+  bgx.setTransform(BG_DPR,0,0,BG_DPR,0,0);
+  BG_STATIC=mkBgStatic();
+  const n=clamp(Math.round(BGW*BGH/30000),14,36);
+  if(BGORG.length!==n)BGORG=Array.from({length:n},()=>mkOrg());
+  if(!BGSNOW.length)BGSNOW=Array.from({length:50},()=>({x:Math.random(),y:Math.random(),r:rnd(.5,1.3),v:rnd(.01,.03),a:rnd(.1,.3)}));
+}
+function mkOrg(){
+  const type=ORG_TYPES[(Math.random()*4)|0];
+  return{type,nx:Math.random(),ny:Math.random(),tx:Math.random(),ty:Math.random(),tt:rnd(3,7),
+    sp:rnd(18,36)*(type==='microbe'?1.3:1),ph:rnd(0,6.28),rot:rnd(-.3,.3),
+    s:type==='microbe'?rnd(2,3.2):type==='filament'?rnd(4.5,6):rnd(8,13),
+    n:type==='filament'?Math.floor(rnd(4,7.99)):0,
+    hue:Math.random()<.5?'94,234,212':'134,239,172',a:rnd(.35,.65),vx:0,vy:0};
+}
+function updOrg(o,dt,t){
+  o.tt-=dt;
+  if(o.tt<=0){o.tx=Math.random();o.ty=Math.random();o.tt=rnd(3,7)}
+  const zw=BGW*ZONE;
+  const px=o.nx*zw,py=o.ny*BGH,dx=o.tx*zw-px,dy=o.ty*BGH-py,d=Math.hypot(dx,dy)||1;
+  const k=1-Math.exp(-dt*1.2);
+  o.vx=lerp(o.vx,dx/d*o.sp,k);o.vy=lerp(o.vy,dy/d*o.sp,k);
+  o.nx=clamp((px+o.vx*dt+Math.sin(t*.7+o.ph)*.4)/zw,.03,.97);
+  o.ny=clamp((py+o.vy*dt+Math.cos(t*.5+o.ph)*.4)/BGH,.05,.95);
+}
+function drawOrg(o,t){
+  const zw=BGW*ZONE,px=o.nx*zw,py=o.ny*BGH;
+  const wob=Math.sin(t*o.sp*.2+o.ph);
+  bgx.save();
+  bgx.translate(px,py+wob*4);
+  bgx.rotate(Math.atan2(o.vy+.001,o.vx+.001)*.4+o.rot+wob*.1);
+  bgx.fillStyle=`rgba(${o.hue},${o.a*.45})`;bgx.strokeStyle=`rgba(${o.hue},${o.a})`;bgx.lineWidth=1.1;
+  if(o.type==='cell'){
+    bgx.beginPath();bgx.ellipse(0,0,o.s,o.s*.7,0,0,6.283);bgx.fill();bgx.stroke();
+    for(let k=0;k<6;k++){
+      const a=k/6*6.283+t*1.5;
+      bgx.beginPath();bgx.moveTo(o.s*.9*Math.cos(a),o.s*.6*Math.sin(a));
+      bgx.quadraticCurveTo(o.s*1.4*Math.cos(a+.4),o.s*1.4*Math.sin(a+.4)+Math.sin(t*5+k)*1.5,o.s*1.9*Math.cos(a+.8),o.s*1.9*Math.sin(a+.8));
+      bgx.stroke();
+    }
+  }else if(o.type==='filament'){
+    for(let k=0;k<o.n;k++){
+      const cx=k*o.s*.9+Math.sin(t*2+k*.7)*1.5,cy=Math.sin(t*2.5+k)*1.2;
+      bgx.beginPath();bgx.arc(cx,cy,o.s*.5,0,6.283);bgx.fill();bgx.stroke();
+    }
+  }else if(o.type==='ameba'){
+    bgx.beginPath();
+    for(let k=0;k<=24;k++){
+      const a=k/24*6.283,r=o.s*(1+.16*Math.sin(3*a+t*2.5+o.ph));
+      const x=r*Math.cos(a),y=r*.75*Math.sin(a);
+      k?bgx.lineTo(x,y):bgx.moveTo(x,y);
+    }
+    bgx.closePath();bgx.fill();bgx.stroke();
+  }else{
+    bgx.beginPath();bgx.arc(0,0,o.s,0,6.283);bgx.fill();
+  }
+  bgx.restore();
+}
+function drawOcean(t,dt){
+  const step=Math.min(dt,.05);
+  bgx.clearRect(0,0,BGW,BGH);
+  bgx.drawImage(BG_STATIC,0,0,BGW,BGH);
+  bgx.globalCompositeOperation='lighter';
+  for(let k=0;k<4;k++){
+    const x0=BGW*(.06+.1*k)+Math.sin(t*.1+k)*24;
+    const rg=bgx.createLinearGradient(0,0,0,BGH*.8);
+    rg.addColorStop(0,'rgba(170,240,230,.09)');rg.addColorStop(1,'rgba(170,240,230,0)');
+    bgx.fillStyle=rg;bgx.beginPath();bgx.moveTo(x0,0);bgx.lineTo(x0+50,0);bgx.lineTo(x0+130,BGH*.8);bgx.lineTo(x0+30,BGH*.8);bgx.closePath();bgx.fill();
+  }
+  bgx.globalCompositeOperation='source-over';
+  bgx.fillStyle='rgba(200,240,235,.5)';
+  for(const p of BGSNOW){
+    p.y+=p.v*step;if(p.y>1)p.y-=1;
+    const x=p.x*BGW+Math.sin(t+p.y*12)*3,y=p.y*BGH;
+    bgx.globalAlpha=p.a;bgx.beginPath();bgx.arc(x,y,p.r,0,6.283);bgx.fill();
+  }
+  bgx.globalAlpha=1;
+  for(const o of BGORG){updOrg(o,step,t);drawOrg(o,t)}
+}
+
+/* ================= ENERGIA E RISORSE PASSIVE ================= */
+const passiveE=()=>.2+.25*(S.geoLv||0);
+function passive(k){
+  S.E+=k*passiveE();
+  S.org+=k*.03;S.pep+=k*.03;S.nuc+=k*.05;S.ves+=k*.05;S.proto+=k*.002;
+  const e=env();
+  if(e.TC>70)S.co2*=Math.exp(-k*.03);
+  else if(e.TC<5)S.co2+=k*.002;
+}
+function buyGeo(){
+  const lv=S.geoLv||0;
+  if(lv>=3)return toast('Impianto già al massimo');
+  const c=GEO_COST[lv];
+  if(S.E<c)return toast(`Servono ${c} E`);
+  S.E-=c;S.geoLv=lv+1;
+  logm(`⚡ Impianto geotermico potenziato (livello ${S.geoLv}): più energia nel tempo.`);
+}
+
+/* ================= CICLO GIORNO / NOTTE / MAREA ================= */
+const sunAng=()=>2*Math.PI*S.dayPh;
+const sunElev=()=>Math.sin(sunAng());
+const tideCycle=()=>Math.cos(4*Math.PI*S.dayPh);
+function dayName(){const e=sunElev();return e>.3?'giorno':e>-.05?'alba/tramonto':'notte'}
+
+/* ================= RUMORE E UTILITÀ COLORE ================= */
+const h2=(x,y)=>{const s=Math.sin(x*127.1+y*311.7)*43758.5453;return s-Math.floor(s)};
+function n2(x,y){const ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy,ux=fx*fx*(3-2*fx),uy=fy*fy*(3-2*fy);return lerp(lerp(h2(ix,iy),h2(ix+1,iy),ux),lerp(h2(ix,iy+1),h2(ix+1,iy+1),ux),uy)}
+const fb2=(x,y)=>.5*n2(x,y)+.25*n2(x*2.02+5.2,y*2.02+1.3)+.125*n2(x*4.1+9,y*4.1+3);
+const mx=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*clamp(t,0,1));
+const v3=(v,a)=>v.set(a[0]/255,a[1]/255,a[2]/255);
+const colC=a=>new THREE.Color().setRGB(a[0]/255,a[1]/255,a[2]/255,THREE.SRGBColorSpace);
+
+/* ================= AMBIENTE ================= */
+function env(){
+  const T=S.T,age=AGE0-T,dt=T0-T;
+  const L=1/(1+.4*(1-age/AGE0));
+  const heat=1+1.6*Math.exp(-age/1200);
+  const moonD=.45+.02*dt/SPAN;
+  const tideF=1/Math.pow(moonD,3);
+  const tideB=clamp(tideF/4,1,3);
+  const dayH=13+dt/SPAN;
+  const B=.35+.2*Math.abs(Math.sin(T/29));
+  const hz=clamp((S.ch4-.002)/.01,0,1);
+  const Ts=255*Math.pow(L,.25)+5.8*Math.log(Math.max(S.co2,1e-5)/.00028)+3*Math.log(1+S.ch4/.0002)-4*hz;
+  const TC=Ts-273;
+  const liquid=TC>=0&&TC<=100,hab=TC>=0&&TC<=80;
+  const pH=clamp(7.8-.4*Math.log10(Math.max(S.co2,1e-5)/.0003),5,8.5);
+  const acid=clamp(S.co2/.5,0,1);
+  const red=clamp(S.h2/.01*.5+S.ch4/.01*.5,0,1);
+  const uv=clamp(1-.7*hz,.3,1);
+  const stormR=clamp(.4+.1*(15-dayH),.2,1);
+  return {L,heat,moonD,tideF,tideB,dayH,B,hz,TC,liquid,hab,pH,acid,red,uv,stormR};
+}
+
+/* ================= GEOMETRIA ================= */
+function geo(){
+  const f=clamp(.25+S.land*1.5,.25,.7),shoreX=Math.round(W*(1-f)),landW=W-shoreX;
+  const vx=VOLC.map(v=>shoreX+Math.max(60,landW*v.f));
+  const gx=shoreX+34, ventX=shoreX-70;
+  return{shoreX,landW,vx,gx,ventX};
+}
+const WX=50,WZ=30;
+const TW=90,TD=60,TZC=-6;
+const TNX=201,TNZ=131,TSTEP=4;
+const DXS=TW/(TNX-1),DZS=TD/(TNZ-1);
+const toW=px=>px/W*WX-WX/2;
+let P=null,PT=null;
+const worldParams=G=>({sx:toW(G.shoreX),vx:G.vx.map(toW),vz:[-6,-2.5,-9],gx:toW(G.gx),ex:toW(G.ventX)});
+
+function hf(x,z,Q){
+  const u=x-Q.sx;
+  let h=u>0?.3*u:.2*u;
+  h+=(fb2(x*.22,z*.22)-.5)*(u>-3?2.2:.8);
+  for(let i=0;i<3;i++){
+    const dx=x-Q.vx[i],dz=(z-Q.vz[i])*1.15,r=Math.hypot(dx,dz),R=5.6;
+    if(r<R){
+      const t=1-r/R;
+      h+=7.5*Math.pow(t,1.5)*(.85+.3*fb2(x*.8+i,z*.8));
+      if(r<1.4)h-=2.2*(1-r/1.4);
+    }
+  }
+  const dg=Math.hypot(x-Q.gx,(z+1)*1.2);
+  if(dg<3.2){h+=.55*Math.pow(1-dg/3.2,2);if(dg<1.1)h-=.35*(1-dg/1.1)}
+  for(const c of (S.craters||[])){
+    const r=Math.hypot(x-c.x,z-c.z),t=r/c.r;
+    if(t<2.2){
+      if(t<1)h-=c.d*(1-t*t);
+      else h+=c.d*.35*Math.exp(-Math.pow((t-1)*3.5,2));
+    }
+  }
+  return h;
+}
+
+/* ================= COLORI DEL SUOLO ================= */
+const cB=new THREE.Color(0x2c2a28),cK=new THREE.Color(0x5e5448),cO=new THREE.Color(0x7a3420),cS=new THREE.Color(0xe2dccb),
+      cSand=new THREE.Color(0x8c7d62),cDark=new THREE.Color(0x15110f),cSea=new THREE.Color(0x6fc2b8),cSeaD=new THREE.Color(0x3f9a95),cVent=new THREE.Color(0x3a2a22);
+function colorAt(x,z,h,sl,Q,c){
+  const n=fb2(x*.5,z*.5),st=fb2(x*.12,z*.12);
+  if(h>-.15){
+    c.copy(cK).lerp(cB,clamp(n*1.4-.2,0,1));
+    c.lerp(cDark,sstep(.35,.7,sl)*.6);
+    let ox=0;for(let i=0;i<3;i++){const r=Math.hypot(x-Q.vx[i],(z-Q.vz[i])*1.15);ox=Math.max(ox,1-r/6.5)}
+    c.lerp(cO,clamp(ox,0,1)*.5*(.6+.4*st));
+    const dg=Math.hypot(x-Q.gx,(z+1)*1.2);c.lerp(cS,clamp(1-dg/3.2,0,1)*.9);
+    const u=x-Q.sx;if(u>-1.5&&u<1.2&&h<.5)c.lerp(cSand,clamp(1-Math.abs(u-.2)/1.4,0,1)*.6);
+  }else{
+    c.copy(cSeaD).lerp(cSea,clamp((h+3)/3,0,1)*.5+.25*n);
+    const dv=Math.abs(x-Q.ex);if(dv<2.5)c.lerp(cVent,clamp(1-dv/2.5,0,1)*.7);
+  }
+  const near=sstep(0,12,z)*(.6+.4*sstep(-4,8,x));
+  c.multiplyScalar(1-.8*near);
+}
+
+/* ================= SCENA, CAMERA, RENDERER ================= */
+const view=$('#view');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+view.prepend(renderer.domElement);
+const scene=new THREE.Scene();
+scene.fog=new THREE.Fog(0xaca69a,30,170);
+const camera=new THREE.PerspectiveCamera(38,W/H,.1,400);
+camera.position.set(0,4.2,30);camera.lookAt(0,4.6,-10);
+function fit(){
+  const w=view.clientWidth||W,h=view.clientHeight||H;
+  renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+  pmat.uniforms.uScale.value=renderer.domElement.height/(2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2)));
+}
+addEventListener('resize',fit);
+
+const skyU={uZen:{value:new THREE.Vector3()},uMid:{value:new THREE.Vector3()},uHor:{value:new THREE.Vector3()},
+  uSun:{value:new THREE.Vector3(0,1,0)},uSC:{value:new THREE.Vector3(0,0,0)},uFl:{value:0}};
+const sky=new THREE.Mesh(new THREE.SphereGeometry(300,32,16),new THREE.ShaderMaterial({uniforms:skyU,side:THREE.BackSide,depthWrite:false,fog:false,
+  vertexShader:'varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  fragmentShader:`uniform vec3 uZen,uMid,uHor,uSun,uSC;uniform float uFl;varying vec3 vP;
+void main(){vec3 d=normalize(vP);float h=d.y;
+vec3 c=mix(uHor,uMid,smoothstep(-.02,.3,h));c=mix(c,uZen,smoothstep(.2,.8,h));
+float s=max(dot(d,normalize(uSun)),0.);c+=uSC*(pow(s,8.)*.35+pow(s,300.)*1.6);
+c+=vec3(uFl*.35);gl_FragColor=vec4(c,1.);}`}));
+sky.renderOrder=-10;scene.add(sky);
+
+const STARS=(()=>{const N=900,p=new Float32Array(N*3);
+  for(let i=0;i<N;i++){const y=rnd(.04,1),phi=rnd(0,6.283),r=Math.sqrt(1-y*y);
+    p[i*3]=Math.cos(phi)*r*200;p[i*3+1]=y*200;p[i*3+2]=Math.sin(phi)*r*200}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(p,3));
+  return new THREE.Points(g,new THREE.PointsMaterial({color:0xffffff,size:1.3,sizeAttenuation:false,transparent:true,opacity:0,depthWrite:false,fog:false}))})();
+STARS.renderOrder=-9;scene.add(STARS);
+
+const sun=new THREE.DirectionalLight(0xffe2b8,3);
+sun.position.set(-26,22,-40);sun.target.position.set(0,0,-4);
+sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-42,right:42,top:42,bottom:-42,near:1,far:170});sun.shadow.camera.updateProjectionMatrix();sun.shadow.bias=-.0005;sun.shadow.normalBias=.05;
+const moonL=new THREE.DirectionalLight(0x9db6e0,0);moonL.castShadow=false;
+scene.add(sun,sun.target,moonL);
+const hemi=new THREE.HemisphereLight(0x9fb8d0,0x3b3026,.6);scene.add(hemi);
+
+const SPR_SOFT=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');const gr=x.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.45,'rgba(255,255,255,.55)');gr.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=gr;x.fillRect(0,0,64,64);return c})();
+const texSoft=new THREE.CanvasTexture(SPR_SOFT);
+const sunGlow=new THREE.Sprite(new THREE.SpriteMaterial({map:texSoft,color:0xffe6b0,transparent:true,depthWrite:false,fog:false,blending:THREE.AdditiveBlending}));
+sunGlow.scale.setScalar(50);scene.add(sunGlow);
+const sunDisk=new THREE.Mesh(new THREE.SphereGeometry(3.2,24,16),new THREE.MeshBasicMaterial({color:0xfff2d6,fog:false,transparent:true,opacity:1,depthWrite:false}));
+scene.add(sunDisk);
+const MOON_TEX=(()=>{const N=256,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');
+  const gr=x.createRadialGradient(90,80,10,128,128,128);gr.addColorStop(0,'#f2f0ea');gr.addColorStop(.7,'#bdb9b1');gr.addColorStop(1,'#77736c');
+  x.fillStyle=gr;x.beginPath();x.arc(128,128,126,0,6.3);x.fill();
+  for(let i=0;i<60;i++){const a=h2(i,1)*6.28,d=Math.sqrt(h2(i,2))*108,r=3+h2(i,3)*16,cx=128+Math.cos(a)*d,cy=128+Math.sin(a)*d;
+    x.fillStyle='rgba(70,66,60,.28)';x.beginPath();x.arc(cx,cy,r,0,6.3);x.fill();
+    x.fillStyle='rgba(255,255,250,.18)';x.beginPath();x.arc(cx+r*.25,cy+r*.25,r*.85,0,6.3);x.fill()}
+  return c})();
+const moonMesh=new THREE.Mesh(new THREE.SphereGeometry(5.5,40,28),new THREE.MeshStandardMaterial({map:new THREE.CanvasTexture(MOON_TEX),roughness:.95,metalness:0,emissive:0x000000}));
+moonMesh.scale.setScalar(.001);scene.add(moonMesh);
+
+function celestial(){
+  const a=sunAng(),Z=-86;
+  return{
+    sunP:new THREE.Vector3(-Math.cos(a)*36,Math.sin(a)*22+2,Z),
+    moonP:new THREE.Vector3(Math.cos(a)*36,-Math.sin(a)*22+2,Z)
+  };
+}
+
+/* ================= MARE ================= */
+const SEA_W=140,SEA_D=90,SEA_Z=-14;
+const seaGeo=new THREE.PlaneGeometry(SEA_W,SEA_D,70,40).rotateX(-Math.PI/2).translate(0,0,SEA_Z);
+const SEA_BASE=seaGeo.attributes.position.array.slice();
+{
+  const p=seaGeo.attributes.position,cc=new Float32Array(p.count*3);
+  for(let i=0;i<p.count;i++){
+    const z=p.getZ(i),k=1-.9*sstep(3,14,z)*(.6+.4*sstep(-4,8,p.getX(i)));
+    cc[i*3]=k;cc[i*3+1]=k;cc[i*3+2]=k;
+  }
+  seaGeo.setAttribute('color',new THREE.BufferAttribute(cc,3));
+}
+const seaMat=new THREE.MeshStandardMaterial({color:0x6fc2b8,vertexColors:true,transparent:true,opacity:.8,roughness:.75,metalness:0});
+const SEAM=new THREE.Mesh(seaGeo,seaMat);scene.add(SEAM);
+
+/* ================= TERRENO E ELEMENTI ================= */
+const TMAT=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.92,metalness:0});
+let TM=null,TARGETS=[],CRATER=[],LAVA_MATS=[],GEYPOS=null,VENTPOS=null,POOL_MAT=null,VENT_TIP_MAT=null;
+const WF={crat:[],hitV:[],chim:null,hitVent:null,pool:null,hitGey:null};
+let TGEO=null,TROW=0;
+const NRM_TMP=new THREE.Vector3(),CT=new THREE.Color();
+
+function refreshRows(n){
+  const pos=TGEO.attributes.position,nor=TGEO.attributes.normal,col=TGEO.attributes.color;
+  for(let k=0;k<n;k++){
+    const r=TROW;TROW=(TROW+1)%TNZ;
+    for(let ix=0;ix<TNX;ix++){const i=r*TNX+ix;pos.setY(i,hf(pos.getX(i),pos.getZ(i),P))}
+    for(let ix=0;ix<TNX;ix++){
+      const i=r*TNX+ix,x=pos.getX(i),z=pos.getZ(i),h=pos.getY(i);
+      const xl=pos.getY(ix>0?i-1:i),xr=pos.getY(ix<TNX-1?i+1:i);
+      const zd=pos.getY(r>0?i-TNX:i),zu=pos.getY(r<TNZ-1?i+TNX:i);
+      NRM_TMP.set(-(xr-xl)/(2*DXS),1,-(zd-zu)/(2*DZS)).normalize();
+      nor.setXYZ(i,NRM_TMP.x,NRM_TMP.y,NRM_TMP.z);
+      colorAt(x,z,h,1-NRM_TMP.y,P,CT);
+      col.setXYZ(i,CT.r,CT.g,CT.b);
+    }
+  }
+  pos.needsUpdate=true;nor.needsUpdate=true;col.needsUpdate=true;
+}
+
+function buildVent(){
+  const g=new THREE.Group();
+  const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.95,metalness:.05});
+  const mound=new THREE.Mesh(new THREE.SphereGeometry(1.5,16,8),mat(0x231c18));
+  mound.scale.set(1,.22,1);mound.position.y=-.02;mound.receiveShadow=true;g.add(mound);
+  const segs=[[.95,.72,.9,.42,0x3b2e26],[.72,.5,1.1,1.45,0x4d3a2c],[.5,.3,.9,2.2,0x2b2420]];
+  for(const [r0,r1,h,y,c] of segs){
+    const geo=new THREE.CylinderGeometry(r1,r0,h,14,3);
+    const p=geo.attributes.position;
+    for(let i=0;i<p.count;i++){
+      const x=p.getX(i),yy=p.getY(i),z=p.getZ(i);
+      const j=(h2(i*1.3+y,yy*7)-.5)*.14;
+      p.setX(i,x+j);p.setZ(i,z+j);
+    }
+    geo.computeVertexNormals();
+    const m=new THREE.Mesh(geo,mat(c));m.position.y=y;m.castShadow=true;g.add(m);
+  }
+  VENT_TIP_MAT=new THREE.MeshStandardMaterial({color:0x1a0c08,emissive:0xff8a3a,emissiveIntensity:1.6,roughness:.6});
+  const orifice=new THREE.Mesh(new THREE.CircleGeometry(.26,16).rotateX(-Math.PI/2),VENT_TIP_MAT);
+  orifice.position.y=2.66;g.add(orifice);
+  return g;
+}
+
+function initWorld(){
+  TGEO=new THREE.PlaneGeometry(TW,TD,TNX-1,TNZ-1).rotateX(-Math.PI/2).translate(0,0,TZC);
+  TGEO.setAttribute('color',new THREE.BufferAttribute(new Float32Array(TGEO.attributes.position.count*3),3));
+  TM=new THREE.Mesh(TGEO,TMAT);TM.receiveShadow=true;TM.castShadow=true;TM.userData.k='land';scene.add(TM);
+  refreshRows(TNZ);
+
+  CRATER=[0,1,2].map(()=>new THREE.Vector3());LAVA_MATS=[];WF.crat=[];WF.hitV=[];
+  for(let i=0;i<3;i++){
+    const cg=new THREE.CircleGeometry(.85,18).rotateX(-Math.PI/2);
+    const cp=cg.attributes.position;
+    for(let j=0;j<cp.count;j++){cp.setX(j,cp.getX(j)*(1+.3*(h2(j,i)-.5)));cp.setZ(j,cp.getZ(j)*(1+.3*(h2(j+3,i+7)-.5)))}
+    LAVA_MATS[i]=new THREE.MeshStandardMaterial({color:0x1a0a06,emissive:0xff5a1a,emissiveIntensity:0,roughness:.6});
+    WF.crat[i]=new THREE.Mesh(cg,LAVA_MATS[i]);scene.add(WF.crat[i]);
+    WF.hitV[i]=new THREE.Mesh(new THREE.SphereGeometry(3.4,8,6),new THREE.MeshBasicMaterial({visible:false}));
+    WF.hitV[i].userData.k='vol'+i;scene.add(WF.hitV[i]);
+  }
+
+  VENTPOS=new THREE.Vector3();
+  WF.chim=buildVent();scene.add(WF.chim);
+  WF.hitVent=new THREE.Mesh(new THREE.SphereGeometry(1.6,8,6),new THREE.MeshBasicMaterial({visible:false}));
+  WF.hitVent.userData.k='vent';scene.add(WF.hitVent);
+
+  GEYPOS=new THREE.Vector3();
+  POOL_MAT=new THREE.MeshStandardMaterial({color:0x1592ad,emissive:0x0a4f63,emissiveIntensity:.2,roughness:.04,metalness:.1,transparent:true,opacity:.92});
+  WF.pool=new THREE.Mesh(new THREE.CircleGeometry(.95,28).rotateX(-Math.PI/2),POOL_MAT);scene.add(WF.pool);
+  WF.hitGey=new THREE.Mesh(new THREE.SphereGeometry(2.6,8,6),new THREE.MeshBasicMaterial({visible:false}));
+  WF.hitGey.userData.k='geyser';scene.add(WF.hitGey);
+
+  TARGETS=[TM,SEAM,sky,...WF.hitV,WF.hitVent,WF.hitGey];
+  placeFeatures();
+}
+
+function placeFeatures(){
+  for(let i=0;i<3;i++){
+    const x=P.vx[i],z=P.vz[i],y=hf(x,z,P);
+    CRATER[i].set(x,y,z);
+    WF.crat[i].position.set(x,y+.04,z);
+    WF.hitV[i].position.set(x,y+2,z);
+  }
+  const vx=P.ex,vz=-2.5,vy=hf(vx,vz,P);
+  VENTPOS.set(vx,vy+2.66,vz);
+  WF.chim.position.set(vx,vy,vz);
+  WF.hitVent.position.set(vx,vy+1.2,vz);
+  const gx=P.gx,gz=-1,gy=hf(gx,gz,P);
+  GEYPOS.set(gx,gy,gz);
+  WF.pool.position.set(gx,gy-.02,gz);
+  WF.hitGey.position.set(gx,gy+1.6,gz);
+}
+
+function ensureWorld(G,dt){
+  PT=worldParams(G);
+  if(!TGEO){
+    P={sx:PT.sx,vx:PT.vx.slice(),vz:PT.vz,gx:PT.gx,ex:PT.ex};
+    initWorld();
+    return;
+  }
+  const k=1-Math.exp(-dt*.35);
+  P.sx=lerp(P.sx,PT.sx,k);P.gx=lerp(P.gx,PT.gx,k);P.ex=lerp(P.ex,PT.ex,k);
+  for(let i=0;i<3;i++)P.vx[i]=lerp(P.vx[i],PT.vx[i],k);
+  refreshRows(TSTEP);
+  placeFeatures();
+}
+
+/* ================= MONTAGNE LONTANE, AURORA, NUVOLE ================= */
+const auroraMat=new THREE.ShaderMaterial({uniforms:{uT:{value:0},uA:{value:0}},transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,fog:false,
+  vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  fragmentShader:`uniform float uT,uA;varying vec2 vUv;
+void main(){float r=sin(vUv.x*38.+uT*.6)*.5+.5;r*=sin(vUv.x*13.-uT*.25)*.5+.5;
+float e=smoothstep(0.,.25,vUv.y)*smoothstep(1.,.55,vUv.y);
+vec3 c=mix(vec3(.2,1.,.5),vec3(.6,.3,1.),vUv.y);gl_FragColor=vec4(c*r*e*uA,r*e*uA);}`});
+const aurora=new THREE.Mesh(new THREE.PlaneGeometry(90,16,1,1),auroraMat);aurora.position.set(0,22,-58);scene.add(aurora);
+
+const ridgeGeo=new THREE.PlaneGeometry(240,40,120,4);
+{const rp=ridgeGeo.attributes.position;
+  for(let i=0;i<rp.count;i++){
+    const x=rp.getX(i),row=rp.getY(i);
+    let y=-10;
+    if(row>-20+1e-3){
+      y=4+9*fb2(x*.05,1);
+      for(const vxk of [-30,20]){y+=18*Math.exp(-Math.pow((x-vxk)/9,2))}
+    }
+    rp.setY(i,y);
+  }
+  ridgeGeo.computeVertexNormals();
+}
+const ridgeMat=new THREE.MeshBasicMaterial({color:0x2a2a30,fog:false});
+const ridge=new THREE.Mesh(ridgeGeo,ridgeMat);ridge.position.set(0,0,-72);scene.add(ridge);
+
+function SPR_CLOUD(kind){
+  const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d');
+  const col=kind==='dk'?'84,92,104':kind==='lt'?'255,246,232':'214,220,228';
+  const gr=x.createRadialGradient(48,48,0,48,48,48);
+  gr.addColorStop(0,`rgba(${col},1)`);gr.addColorStop(.5,`rgba(${col},.6)`);gr.addColorStop(1,`rgba(${col},0)`);
+  x.fillStyle=gr;x.fillRect(0,0,96,96);return c;
+}
+const texCu=new THREE.CanvasTexture(SPR_CLOUD('cu')),texDk=new THREE.CanvasTexture(SPR_CLOUD('dk')),texLt=new THREE.CanvasTexture(SPR_CLOUD('lt'));
+const CLOUDS=[];
+function makeCloud(){
+  const r=Math.random(),kind=r<.22?'storm':r<.5?'cirrus':'cu';
+  const grp=new THREE.Group();
+  const n=kind==='storm'?22:kind==='cirrus'?10:14;
+  const WD=kind==='storm'?16:kind==='cirrus'?20:9,HT=kind==='storm'?7:kind==='cirrus'?1.2:4;
+  for(let i=0;i<n;i++){
+    const dx=(Math.random()-.5)*WD,dy=-Math.random()*HT*(1-Math.abs(dx)/WD*.8)*(kind==='cirrus'?.4:1);
+    const s=kind==='storm'?rnd(3,5):kind==='cirrus'?rnd(2,3.2):rnd(2,3.6);
+    const tex=kind==='storm'?(dy>-HT*.3?texDk:texLt):texCu;
+    const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,opacity:.8,fog:false}));
+    sp.scale.set(s*(kind==='cirrus'?2.4:1)*1.2,s*1.2);sp.position.set(dx,dy,0);grp.add(sp);
+  }
+  grp.position.set(rnd(-30,30),kind==='storm'?rnd(14,18):rnd(12,19),rnd(-30,-16));
+  grp.userData={kind,v:rnd(.4,1.2)*(kind==='storm'?.5:1)};
+  scene.add(grp);CLOUDS.push(grp);
+}
+for(let i=0;i<12;i++)makeCloud();
+
+/* ================= PARTICELLE ================= */
+const MAXP=1400;
+const PX=new Float32Array(MAXP*3),PC=new Float32Array(MAXP*3),PS=new Float32Array(MAXP),PA=new Float32Array(MAXP);
+const pgeo=new THREE.BufferGeometry();
+pgeo.setAttribute('position',new THREE.BufferAttribute(PX,3));
+pgeo.setAttribute('aCol',new THREE.BufferAttribute(PC,3));
+pgeo.setAttribute('aSize',new THREE.BufferAttribute(PS,1));
+pgeo.setAttribute('aA',new THREE.BufferAttribute(PA,1));
+const pmat=new THREE.ShaderMaterial({uniforms:{uTex:{value:texSoft},uScale:{value:200}},transparent:true,depthWrite:false,
+  vertexShader:`attribute float aSize;attribute float aA;attribute vec3 aCol;varying vec3 vC;varying float vA;uniform float uScale;
+void main(){vC=aCol;vA=aA;vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=aSize*uScale/max(-mv.z,.1);gl_Position=projectionMatrix*mv;}`,
+  fragmentShader:`uniform sampler2D uTex;varying vec3 vC;varying float vA;
+void main(){float a=texture2D(uTex,gl_PointCoord).a*vA;if(a<.01)discard;gl_FragColor=vec4(vC,a);}`});
+const pts3=new THREE.Points(pgeo,pmat);pts3.frustumCulled=false;scene.add(pts3);
+const PARTS=[];
+const KIND={
+  ember:{g:9,c:[1,.55,.2],sz:[.22,.08],al:1,w:0},
+  ash:{g:2.5,c:[.25,.23,.22],sz:[.9,2.4],al:.7,w:0},
+  steam:{g:-.6,c:[.94,.95,.97],sz:[1.6,4.5],al:.45,w:0},
+  smoke:{g:-.9,c:[.2,.19,.18],sz:[3,11],al:.55,w:0},
+  drop:{g:18,c:[.82,.94,1],sz:[.16,.12],al:.95,w:0},
+  plume:{g:-1.2,c:[.22,.18,.17],sz:[.5,3.2],al:.6,w:-.5},
+  shimmer:{g:-.3,c:[.85,.78,.7],sz:[.5,1.6],al:.18,w:-.3}
+};
+function addP(k,x,y,z,vx,vy,vz,l,s0,s1){if(PARTS.length>=MAXP)return;PARTS.push({k,x,y,z,vx,vy,vz,l,age:0,s0,s1})}
+function updParticles(dt){
+  for(let i=PARTS.length-1;i>=0;i--){
+    const p=PARTS[i],K=KIND[p.k];p.age+=dt;
+    p.vy-=K.g*dt;
+    p.vx+=K.w*dt;
+    const dr=Math.max(0,1-.3*dt);p.vx*=dr;p.vz*=dr;p.vy*=Math.max(0,1-.2*dt);
+    p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;
+    const solid=p.k==='ember'||p.k==='drop'||p.k==='ash';
+    if(p.age>=p.l||(solid&&p.y<hf(p.x,p.z,P)))PARTS.splice(i,1);
+  }
+  let n=0;
+  for(const p of PARTS){
+    const a=clamp(1-p.age/p.l,0,1),K=KIND[p.k];
+    PX[n*3]=p.x;PX[n*3+1]=p.y;PX[n*3+2]=p.z;
+    PC[n*3]=K.c[0];PC[n*3+1]=K.c[1];PC[n*3+2]=K.c[2];
+    PS[n]=lerp(p.s0,p.s1,1-a);
+    PA[n]=p.k==='ember'||p.k==='drop'?K.al*a:K.al*Math.min(1,a*1.6);
+    n++;
+  }
+  for(let j=n;j<MAXP;j++)PA[j]=0;
+  for(const at of ['position','aCol','aSize','aA'])pgeo.attributes[at].needsUpdate=true;
+}
+
+/* ================= EFFETTI ================= */
+function burst(i){
+  const c=CRATER[i];if(!c)return;
+  for(let n=0;n<60;n++)addP('ember',c.x+rnd(-.3,.3),c.y+.2,c.z+rnd(-.3,.3),rnd(-3,3),rnd(7,12),rnd(-3,3),rnd(1.2,2.2),.22,.08);
+  for(let n=0;n<20;n++)addP('ash',c.x,c.y+.3,c.z,rnd(-1,1),rnd(3,5),rnd(-1,1),rnd(7,11),.8,3);
+}
+function geyEnv(t){const ph=t%16;return ph<5?Math.sin(Math.PI*ph/5):0}
+function effects(e,t,dt){
+  if(S.acc>0&&CRATER[LASTV]){
+    const c=CRATER[LASTV];
+    if(Math.random()<40*dt)addP('ember',c.x+rnd(-.3,.3),c.y+.2,c.z+rnd(-.3,.3),rnd(-2,2),rnd(5,9),rnd(-2,2),rnd(1,2),.22,.08);
+    if(Math.random()<14*dt)addP('ash',c.x,c.y+.3,c.z,rnd(-.8,.8),rnd(3,4.5),rnd(-.8,.8),rnd(6,9),.8,3);
+  }
+  const ge=geyEnv(t);
+  if(ge>.05&&GEYPOS){
+    const g0=GEYPOS;
+    if(Math.random()<150*ge*dt)addP('drop',g0.x+rnd(-.15,.15),g0.y+.1,g0.z+rnd(-.15,.15),rnd(-.6,.6)*ge,rnd(10,15)*ge,rnd(-.6,.6)*ge,rnd(1.1,1.6),.16,.12);
+    if(Math.random()<26*ge*dt)addP('steam',g0.x+rnd(-.4,.4),g0.y+rnd(3,5)*ge,g0.z,rnd(.2,.5),rnd(1,2),rnd(-.2,.2),rnd(3,5),1.5,5);
+  }
+  if(e.liquid&&VENTPOS){
+    const v=VENTPOS;
+    if(Math.random()<20*dt)addP('plume',v.x+rnd(-.08,.08),v.y,v.z+rnd(-.08,.08),rnd(-.2,.1),rnd(1.4,2.2),rnd(-.1,.1),rnd(4,7),.5,2.8);
+    if(Math.random()<6*dt)addP('shimmer',v.x+rnd(-.1,.1),v.y+rnd(.1,.6),v.z+rnd(-.1,.1),rnd(-.2,.1),rnd(.6,1.2),rnd(-.1,.1),rnd(2,3),.4,1.4);
+    if(Math.random()<8*dt)addP('ember',v.x+rnd(-.12,.12),v.y,v.z+rnd(-.12,.12),rnd(-.2,.2),rnd(.8,1.6),rnd(-.2,.2),rnd(.5,.9),.12,.05);
+  }
+  if((S.F.bolt>0&&Math.random()<dt*2.5)||(stormV>.6&&Math.random()<dt*.5))spawnBolt();
+}
+
+/* ================= PIOGGIA E FULMINI ================= */
+const RN=200,RP=new Float32Array(RN*6),RX=new Float32Array(RN),RY=new Float32Array(RN),RZ=new Float32Array(RN),RV=new Float32Array(RN);
+for(let i=0;i<RN;i++){RX[i]=rnd(-26,26);RY[i]=rnd(0,18);RZ[i]=rnd(-6,14);RV[i]=rnd(18,26)}
+const rgeo=new THREE.BufferGeometry();rgeo.setAttribute('position',new THREE.BufferAttribute(RP,3));
+const rain=new THREE.LineSegments(rgeo,new THREE.LineBasicMaterial({color:0xb8c8dc,transparent:true,opacity:0,depthWrite:false}));
+rain.frustumCulled=false;scene.add(rain);
+function updRain(dt){
+  rain.material.opacity=stormV*.35;
+  if(stormV<.05)return;
+  for(let i=0;i<RN;i++){
+    RY[i]-=RV[i]*dt;
+    if(RY[i]<0){RY[i]=rnd(14,18);RX[i]=rnd(-26,26);RZ[i]=rnd(-6,14)}
+    RP[i*6]=RX[i];RP[i*6+1]=RY[i];RP[i*6+2]=RZ[i];
+    RP[i*6+3]=RX[i]-.15;RP[i*6+4]=RY[i]+.9;RP[i*6+5]=RZ[i];
+  }
+  rgeo.attributes.position.needsUpdate=true;
+}
+const BOLTS=[];
+function spawnBolt(){
+  const x0=rnd(-16,16),z0=rnd(-12,6),ground=hf(x0,z0,P);
+  const top=new THREE.Vector3(x0+rnd(-4,4),22,z0-rnd(0,6));
+  const pts=[];
+  for(let k=0;k<=14;k++){
+    const q=k/14,mid=k>0&&k<14;
+    pts.push(new THREE.Vector3(lerp(top.x,x0,q)+(mid?rnd(-.7,.7):0),lerp(top.y,ground,q),lerp(top.z,z0,q)+(mid?rnd(-.7,.7):0)));
+  }
+  const m=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0xe6f0ff,transparent:true,opacity:1}));
+  scene.add(m);BOLTS.push({m,age:0});flashA=Math.max(flashA,.6);
+}
+function updBolts(dt){
+  for(let i=BOLTS.length-1;i>=0;i--){
+    const b=BOLTS[i];b.age+=dt;
+    b.m.material.opacity=Math.max(0,1-b.age/.45)*(Math.floor(b.age*30)%2?1:.6);
+    if(b.age>.45){scene.remove(b.m);b.m.geometry.dispose();b.m.material.dispose();BOLTS.splice(i,1)}
+  }
+}
+
+/* ================= METEORITI ================= */
+const METEORS=[];let SHAKE=0;
+function dropMeteor(p){
+  if(!p){p={x:rnd(-14,14),z:rnd(-10,2)}}
+  if(S.E<15)return toast('Servono 15 E');
+  if(!cool('met',6))return;
+  S.E-=15;
+  METEORS.push({x:p.x+rnd(-12,12),y:28,z:p.z-rnd(10,16),tx:p.x,tz:p.z,t:0,D:1.5});
+  logm('☄️ Un meteorite è in arrivo.');
+  toast('☄️ Meteorite in arrivo');
+}
+function impactMeteor(x,z){
+  const y=hf(x,z,P);
+  S.craters.push({x,z,r:1.5+rnd(0,.6),d:.8+rnd(0,.4)});
+  if(S.craters.length>10)S.craters.shift();
+  for(let n=0;n<70;n++)addP('ember',x+rnd(-.4,.4),y+.3,z+rnd(-.4,.4),rnd(-5,5),rnd(4,9),rnd(-5,5),rnd(1,2),.3,.1);
+  for(let n=0;n<40;n++)addP('ash',x,y+.3,z,rnd(-3,3),rnd(2,6),rnd(-3,3),rnd(5,9),1,4);
+  for(let n=0;n<18;n++)addP('smoke',x+rnd(-.6,.6),y+.4,z+rnd(-.6,.6),rnd(-.6,.6),rnd(2,4),rnd(-.6,.6),rnd(7,11),3,10);
+  flashA=Math.max(flashA,.9);SHAKE=Math.max(SHAKE,.5);
+  S.fe+=2;S.si+=2;S.org+=3;S.p+=.2;S.E+=4;
+  ev('met','☄️ Impatto di meteorite: cratere aperto, con ferro, silice e composti organici portati dallo spazio.',true);
+}
+function updMeteors(dt){
+  for(let i=METEORS.length-1;i>=0;i--){
+    const m=METEORS[i];m.t+=dt;
+    const k=Math.min(1,m.t/m.D);
+    const x=lerp(m.x,m.tx,k),z=lerp(m.z,m.tz,k),y=lerp(m.y,hf(m.tx,m.tz,P),k*k);
+    for(let j=0;j<3;j++)addP('ember',x+rnd(-.12,.12),y+rnd(0,.5),z+rnd(-.12,.12),rnd(-.3,.3),rnd(.5,1.5),rnd(-.3,.3),.5,.35,.12);
+    if(k>=1){impactMeteor(m.tx,m.tz);METEORS.splice(i,1)}
+  }
+  SHAKE*=Math.exp(-dt*4);
+  camera.position.set((Math.random()-.5)*SHAKE,4.2+(Math.random()-.5)*SHAKE,30);
+}
+
+/* ================= ETICHETTE ================= */
+const LB={};
+function mkLabel(key,text){const d=document.createElement('div');d.className='lbl';d.textContent=text;view.appendChild(d);LB[key]=d}
+mkLabel('v0',VOLC[0].n);mkLabel('v1',VOLC[1].n);mkLabel('v2',VOLC[2].n);mkLabel('g','Geyser');mkLabel('s','Sorgente idrotermale');
+const tmpV=new THREE.Vector3();
+function placeLabels(){
+  const w=view.clientWidth,h=view.clientHeight;
+  const items=[['v0',CRATER[0],2.6],['v1',CRATER[1],2.6],['v2',CRATER[2],2.6],['g',GEYPOS,1.6],['s',VENTPOS,.7]];
+  const placed=[];
+  for(const [k,p,dy] of items){
+    const el=LB[k];
+    if(!p){el.hidden=true;continue}
+    tmpV.copy(p);tmpV.y+=dy;tmpV.project(camera);
+    if(tmpV.z>1){el.hidden=true;continue}
+    el.hidden=false;
+    let sx=(tmpV.x+1)/2*w,sy=(1-tmpV.y)/2*h;
+    for(let g=0;g<6;g++){
+      const hit=placed.find(q=>Math.abs(q.x-sx)<130&&Math.abs(q.y-sy)<22);
+      if(!hit)break;
+      sy=hit.y-24;
+    }
+    placed.push({x:sx,y:sy});
+    el.style.left=sx+'px';el.style.top=sy+'px';
+  }
+}
+
+/* ================= AGGIORNAMENTO SCENA ================= */
+const SM={D:0,Tw:0,ready:false};
+function updateScene(e,t,dt){
+  const a=sunAng(),elev=Math.sin(a);
+  const kk=1-Math.exp(-dt*2.5);
+  const Dt=sstep(-.12,.22,elev),Twt=Math.exp(-Math.pow(elev/.18,2));
+  if(!SM.ready){SM.D=Dt;SM.Tw=Twt;SM.ready=true}
+  SM.D+=(Dt-SM.D)*kk;SM.Tw+=(Twt-SM.Tw)*kk;
+  const D=SM.D,Tw=SM.Tw;
+  const L=clamp(e.L,.3,1),hz=e.hz,hot=clamp((e.TC-80)/40,0,1),sv=stormV;
+  const {sunP,moonP}=celestial();
+
+  const zenD=mx([70,104,140],[80,70,62],hz*.5),midD=mx([120,140,160],[150,110,80],hz*.5),horD=mx([214,206,190],[220,160,110],hz*.5);
+  const zenN=[5,8,18],midN=[16,22,36],horN=[36,42,58],twi=[236,140,70];
+  let zen=mx(zenN,zenD,D),mid=mx(midN,midD,D),hor=mx(horN,horD,D);
+  hor=mx(hor,twi,Tw*.55);mid=mx(mid,twi,Tw*.18);
+  zen=mx(zen,[90,22,12],hot*.6);mid=mx(mid,[150,60,30],hot*.5);hor=mx(hor,[226,96,40],hot*.5);
+  zen=mx(zen,[80,40,22],hz*.5*(.3+.7*D));hor=mx(hor,[176,112,70],hz*.4*D);
+  v3(skyU.uZen.value,mx(zen,[12,14,18],sv*.7));
+  v3(skyU.uMid.value,mx(mid,[40,44,50],sv*.6));
+  v3(skyU.uHor.value,mx(hor,[60,62,70],sv*.6));
+  skyU.uSun.value.copy(sunP).normalize();
+  skyU.uSC.value.set(1,.8,.5).multiplyScalar(D*L*(1-.6*sv)*.9+Tw*.2);
+  skyU.uFl.value=flashA;
+
+  const sunCol=colC(mx([255,150,90],[255,236,206],sstep(-.05,.5,elev)));
+  sunDisk.position.copy(sunP);sunGlow.position.copy(sunP);
+  sunDisk.material.color.copy(sunCol);sunGlow.material.color.copy(sunCol);
+  sunDisk.material.opacity=sstep(-.06,.02,elev);
+  sunGlow.material.opacity=D*L*(1-.6*hz)*(1-.75*sv)*.9+Tw*.15;
+  sun.position.set(sunP.x*.7,Math.max(sunP.y,2),-40);
+  sun.color.copy(sunCol);
+  sun.intensity=(2.4+1.0*L)*D*(1-.7*sv)+flashA*2.5;
+
+  const moonVis=sstep(.02,-.12,elev);
+  moonMesh.position.copy(moonP);
+  moonMesh.scale.setScalar(Math.max(.001,moonVis));
+  moonL.position.set(moonP.x*.7,Math.max(moonP.y,2),30);
+  moonL.intensity=1.4*moonVis*(1-.5*sv)*(1-.5*D);
+
+  hemi.color.copy(colC([70,85,120])).lerp(colC([159,181,204]),D);
+  hemi.intensity=.2+.4*D+flashA*1.2;
+  renderer.toneMappingExposure=.95-.3*sv;
+  scene.fog.color.copy(colC(mx(hor,[60,64,72],sv*.6)));
+
+  STARS.material.opacity=(1-D)*(1-sv*.85)*.9;
+
+  const tide=.3*e.tideF*tideCycle();
+  seaMat.color.copy(colC(e.TC>100?[107,47,26]:mx([84,160,160],[96,170,120],clamp(S.fe/60,0,1)))).multiplyScalar(.35+.65*D);
+  const sp=SEAM.geometry.attributes.position;
+  for(let i=0;i<sp.count;i++){
+    const x=SEA_BASE[i*3],z=SEA_BASE[i*3+2];
+    sp.setY(i,tide+.09*Math.sin(x*.45+t*1.3)+.06*Math.sin(z*.8-t*1.1));
+  }
+  sp.needsUpdate=true;
+
+  if(POOL_MAT)POOL_MAT.emissiveIntensity=.12+.08*Math.sin(t*2)+.2;
+  if(VENT_TIP_MAT)VENT_TIP_MAT.emissiveIntensity=e.liquid?1.6+.5*Math.sin(t*5):0;
+
+  for(let i=0;i<3;i++){
+    const on=S.acc>0&&LASTV===i;
+    if(LAVA_MATS[i])LAVA_MATS[i].emissiveIntensity=on?2.4+.6*Math.sin(t*6+i):0;
+  }
+
+  const cover=clamp(.25+.45*(e.liquid?1:.4)+.3*hz,0,1);
+  const lit=clamp(.2+.8*(.55*D+.45*L*D),0,1);
+  for(const c of CLOUDS){
+    c.position.x+=c.userData.v*dt;
+    if(c.position.x>36)c.position.x=-36;
+    const k=c.userData.kind;
+    const al=k==='storm'?sv:k==='cirrus'?cover*.4:cover*.85;
+    const cl=lit*(k==='storm'?(.5-.25*sv):1);
+    for(const s of c.children){
+      s.material.opacity=al*(k==='storm'?.95:.85);
+      s.material.color.setRGB(cl,cl*.98,cl*.95);
+    }
+  }
+
+  auroraMat.uniforms.uT.value=t;
+  auroraMat.uniforms.uA.value=clamp(S.F.aur/4,0,1)*.7*(1-.7*sv)*(1-D);
+  ridgeMat.color.copy(colC(mx([34,40,50],[78,58,46],clamp(hz*.8+.15,0,1)))).multiplyScalar(.12+.88*D);
+}
+
+/* ================= INTERAZIONE ================= */
+const ray=new THREE.Raycaster(),ptr=new THREE.Vector2();
+function pickHit(ev){
+  const r=renderer.domElement.getBoundingClientRect();
+  ptr.x=(ev.clientX-r.left)/r.width*2-1;ptr.y=-((ev.clientY-r.top)/r.height)*2+1;
+  ray.setFromCamera(ptr,camera);
+  return ray.intersectObjects(TARGETS,false)[0]||null;
+}
+function pick(ev){const h=pickHit(ev);return h?h.object.userData.k:null}
+function infoOf(k){
+  if(k.startsWith('vol')){const i=+k[3];return{t:'🌋 '+VOLC[i].n,d:CD['v'+i]>0?`In ricarica (${Math.ceil(CD['v'+i])} s).`:"Clicca per l'eruzione: lapilli e cenere, e il degassamento triplica per 10 Ma."}}
+  if(k==='vent')return{t:'♨️ Sorgente idrotermale',d:'Sempre attiva in autonomia. Camino di solfuri metallici: acqua calda ricca di minerali, fumo scuro e bocca incandescente.'};
+  if(k==='geyser')return{t:'♨️ Geyser',d:'Spruzza acqua calda in autonomia ogni 16 s.'};
+  if(k==='tide')return{t:'🌊 Mare',d:'Marea autonoma regolata dalla Luna: '+(tideCycle()>.5?'ora è alta, ideale per concentrare le molecole sulle spiagge.':'ora è bassa.')};
+  if(k==='sky')return{t:'⛈️ Cielo',d:'Clicca per un temporale (5 E): i fulmini fissano azoto e creano molecole organiche.'};
+  if(k==='land')return{t:'☄️ Suolo',d:'Clicca per far cadere un meteorite in questo punto (15 E). Lascia un cratere e porta ferro, silice e composti organici.'};
+  return{t:'🪨 Suolo',d:'Vulcani, geyser e sorgenti sono gli elementi cliccabili del paesaggio.'};
+}
+const tip=$('#tip');
+view.addEventListener('pointermove',e=>{
+  if(e.target.closest('#ctrl')){tip.hidden=true;return}
+  const k=pick(e);
+  if(!k){tip.hidden=true;return}
+  const info=infoOf(k);
+  tip.innerHTML=`<b>${info.t}</b>${info.d}`;tip.hidden=false;
+  const r=view.getBoundingClientRect();
+  let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
+  if(x+280>r.width)x=e.clientX-r.left-280;
+  tip.style.left=x+'px';tip.style.top=y+'px';
+});
+view.addEventListener('pointerleave',()=>{tip.hidden=true});
+view.addEventListener('click',e=>{
+  const h=pickHit(e);if(!h)return;
+  const k=h.object.userData.k;
+  if(k.startsWith('vol'))act.erupt(+k[3]);
+  else if(k==='sky')act.storm();
+  else if(k==='land')dropMeteor({x:h.point.x,z:h.point.z});
+  else return;
+  save();
+});
+
+/* ================= SIMULAZIONE ================= */
+function tick(d){
+  const e=env(),liq=e.liquid,vm=S.acc>0?3:1,F=S.F;
+  S.acc=Math.max(0,S.acc-d);
+
+  S.co2+=.035*e.heat*vm*d;
+  S.ch4+=.00002*e.heat*vm*d;
+  S.h2+=(liq?.0008:.0002)*e.heat*vm*d;
+
+  const wr=Math.min(.9,2.5*S.land*Math.pow(2,(e.TC-15)/10)*(1+.6*e.acid)*d);
+  const Wc=S.co2*wr;S.co2-=Wc;S.si+=Wc*60;S.fe+=Wc*15;
+
+  if(Math.random()<.25*e.heat*d){S.co2+=.004*e.heat;S.fe+=4;S.si+=3;S.land+=.003;F.lava=3;
+    ev('kom','🔥 Komatiiti: lava ultramafica a ~1.600 °C, più fluida e più calda di qualsiasi lava di oggi.')}
+  if(Math.random()<.02*d){S.land+=.01;ev('sag','🧱 Sagduction: crosta densa affonda, magma leggero risale e forma nuclei granitici (TTG). Le terre emerse crescono.',true)}
+  if(Math.random()<e.stormR*.5*d){S.nh3+=2e-5*S.n2;if(e.red>.1)S.org+=.5*e.red;S.E+=1;F.storm=1.5;F.bolt=1;
+    ev('storm',"⛈️ Tempesta con fulmini: l'azoto si lega in ammoniaca e l'atmosfera riducente produce molecole organiche.")}
+  if(e.acid>.3&&Math.random()<.3*d){S.si+=.5;S.org*=.97;ev('acid','🌧️ Piogge acide: la CO₂ corrode le rocce emerse e trascina sali nel mare.')}
+  if(Math.random()<1.5*d){S.org+=.3;S.p+=.1;ev('micro','✨ Micrometeoriti: fosforo e amminoacidi semplici arrivano dallo spazio.')}
+  const flux=.1+.4*Math.exp(-Math.pow((S.T-3950)/90,2));
+  if(Math.random()<flux*d){S.pep*=.8;S.nuc*=.8;S.org*=.92;F.tsu=2;
+    ev('imp','🌊 Grande impatto nel mare: tsunami alti centinaia di metri e polveri che riscrivono le coste.',true)}
+  if(Math.random()<.04*d){F.aur=4;ev('aur','🌌 Tempesta geomagnetica: aurore visibili (ipotesi a latitudini basse).',true)}
+  if(e.hz>.3)ev('haze','🟠 Foschia organica: metano e UV formano aerosol che filtrano la luce e raffreddano la superficie.');
+
+  if(liq)S.fe+=.3*e.heat*d;
+  S.h2*=Math.exp(-.05*d*(1.5-e.B));
+
+  const atmN=clamp(S.nh3/.0002,0,1);
+  S.org+=(.4+.8*e.stormR)*e.red*atmN*(liq?1:.4)*d*2;
+  S.nh3=Math.max(0,S.nh3-S.nh3*.02*e.uv*d);
+  S.org-=S.org*S.land*e.uv*.25*d;
+
+  const shore=clamp(S.land*5,0,1);
+  const hi=(tideCycle()>.5);
+  const tideBonus=hi?1.6:.5;
+  const dp=Math.min(S.org,40)*.02*e.tideB*shore*d*tideBonus;
+  S.pep+=dp;S.org-=2*dp;
+  const dn=Math.min(S.p,S.org,30)*.004*e.uv*(liq?1:0)*d;
+  S.nuc+=dn;S.p-=.5*dn;S.org-=dn;
+
+  S.ves+=d*.03*(liq?1:0)*Math.min(S.org,30)/30;
+  const dpr=d*.02*Math.min(S.ves,S.nuc,S.pep)*(liq?1:0);
+  S.proto+=dpr;S.ves-=dpr;S.nuc-=dpr;S.pep-=dpr;
+  S.pep*=1-.001*d;S.nuc*=1-.002*d;S.ves*=1-.0008*d;S.org*=1-.0005*d;
+  S.p+=.02*d;
+
+  if(liq&&S.fe>5&&S.si>5){
+    const b=Math.min(S.fe,S.si*.6)*.02*d;S.fe-=b;S.si-=b*.6;S.bif+=b;
+    if(S.bif>3)ev('bif','🪨 Si depositano le formazioni ferrifere a bande (BIF): ferro e silice precipitano dal mare senza ossigeno.');
+  }
+
+  const conds=liq&&e.hab&&S.org>8&&S.h2>.0003;
+  if(S.bio===0&&conds&&Math.random()<.2*d){S.bio=.01;logm('🦠 Compaiono i primi microbi metanogeni: consumano CO₂ e H₂ e producono metano.')}
+  if(S.bio>0){
+    const bf=S.boost>0?2.5:1;
+    S.bio=clamp(S.bio+(conds?.3*bf*S.bio*(1-S.bio):-.05*S.bio)*d,.001,1);
+    if(liq){const u=Math.min(S.bio*.00015*bf*d,S.h2/4,S.co2/2);S.h2-=4*u;S.co2-=u;S.ch4+=u}
+  }
+  S.boost=Math.max(0,S.boost-d);
+
+  S.E+=d*.1*(e.uv+1+.5*(liq?1:0));
+  if(e.hab)S.habT+=d;S.tot+=d;
+  for(const k of['org','pep','nuc','ves','proto','fe','si','p','h2','co2','ch4','nh3','bif','E','land'])S[k]=Math.max(0,S[k]);
+  S.land=Math.min(.6,S.land);
+}
+
+/* ================= AZIONI DEL GIOCATORE ================= */
+const act={
+  erupt(i){
+    if(!cool('v'+i,8))return;
+    LASTV=i;S.acc=Math.max(S.acc,10);
+    S.co2+=.03;S.h2+=.001;S.fe+=8;S.si+=6;S.p+=.2;S.land=Math.min(.6,S.land+.008);S.F.lava=3;S.nErupt++;
+    burst(i);
+    logm(`🌋 ${VOLC[i].n}: eruzione con lapilli e cenere. Per 10 Ma il degassamento è triplicato.`);
+    toast('🌋 Eruzione! Lapilli e cenere, degassamento triplicato per 10 milioni di anni');
+  },
+  storm(){
+    if(S.E<5)return toast('Servono 5 E');
+    if(!cool('storm',8))return;
+    S.E-=5;S.F.storm=1.5;S.F.bolt=1.2;S.nh3+=3e-5;if(env().red>.1)S.org+=.4;
+    logm('⛈️ Temporale: i fulmini fissano azoto in ammoniaca e creano molecole organiche.');
+  },
+  feed(){
+    if(S.bio<=0)return toast('Non ci sono ancora microbi');
+    if(S.E<10)return toast('Servono 10 E');
+    S.E-=10;S.boost=25;logm('🦠 Microbi con più nutrienti: metabolismo più veloce per 25 Ma.');
+  },
+  fix(){
+    if(S.T>3700)return toast('Disponibile fino a 3,7 Ga');
+    if(S.E<10)return toast('Servono 10 E');
+    S.E-=10;S.nh3+=1e-4;logm("🧬 Fissazione biologica dell'azoto: ammoniaca per le proteine (ipotesi: la nitrogenasi potrebbe essere più tarda).");
+  }
+};
+
+/* ================= OBIETTIVI ================= */
+function goals(){
+  return[
+    ['Tempo con temperatura 0–80 °C',S.tot?Math.round(S.habT/S.tot*100):0,70,'%'],
+    ['Organici nel mare',S.org,25],
+    ['Peptidi',S.pep,15],
+    ['Nucleotidi (mattoni dell\'RNA)',S.nuc,6],
+    ['Vescicole lipidiche',S.ves,4],
+    ['Protocellule',S.proto,2],
+    ['Formazioni ferrifere (BIF)',S.bif,3],
+    ['Tipi di evento osservati',Object.keys(S.ev).length,7]
+  ];
+}
+function showEnd(){
+  const rows=goals().map(x=>`${x[1]>=x[2]?'✔':'✘'} ${x[0]}: ${Math.round(x[1])}${x[3]||''} / ${x[2]}${x[3]||''}`).join('<br>');
+  $('#endh').textContent=S.ok?'🧬 Eoarcheano completato':'Eoarcheano non completato';
+  $('#endtxt').innerHTML=(S.ok
+    ?'La Terra ha attraversato 431 milioni di anni restando in gran parte abitabile, con una chimica prebiotica avanzata. Il prossimo passo è la vita vera.'
+    :"La Terra è arrivata a 3,600 Ga, ma la chimica non è abbastanza avanzata. Puoi rigiocare: l'energia passiva e l'impianto geotermico aiutano a raggiungere i traguardi.")+'<br><br>'+rows;
+  $('#end').hidden=false;
+  if(S.ok)localStorage.setItem('earth-evolution-eoarcheano-done','1');
+}
+
+/* ================= INTERFACCIA ================= */
+function situation(e){
+  if(e.TC>100)return '🔥 Il mare bolle: troppo caldo per la vita come la conosciamo. Il pianeta deve raffreddarsi.';
+  if(e.TC<0)return '🧊 Il pianeta è ghiacciato: la chimica rallenta molto.';
+  if(S.acc>0)return '🌋 Eruzione in corso: lapilli e cenere, e il degassamento è triplicato.';
+  if(S.F.storm>0)return '⛈️ Temporale: i fulmini stanno fissando azoto e creando molecole organiche.';
+  if(S.bio>0)return '🦠 Ci sono già microbi: consumano idrogeno e CO₂ e producono metano.';
+  if(S.bif>3)return '🪨 Il mare sta depositando ferro e silice: le formazioni ferrifere a bande crescono.';
+  return '🌊 Condizioni miti. Osserva il mare e clicca i vulcani, la spiaggia o il cielo per agire.';
+}
+function ui(){
+  const e=env();
+  $('#date').textContent='−'+ga(S.T);
+  $('#bar i').style.width=((T0-S.T)/SPAN*100)+'%';
+  $('#now').textContent=situation(e);
+  $('#hud').textContent=`−${ga(S.T)}  ·  ${dayName()}  ·  ${e.TC.toFixed(0)} °C  ·  ${e.liquid?'mare liquido':'mare non liquido'}  ·  sorgente sempre attiva`;
+  $('#guide').hidden=S.tut;
+  $('#goals').innerHTML=goals().map(x=>{const v=Math.round(x[1]),ok=x[1]>=x[2];return `<div class="${ok?'ok':''}">${ok?'✔':'○'} ${x[0]}: ${v}${x[3]||''} / ${x[2]}${x[3]||''}</div>`}).join('');
+  $('#env').innerHTML=[
+    ['Temperatura superficiale',e.TC.toFixed(0)+' °C','Acqua liquida tra 0 e 100 °C. La vita attuale funziona meglio tra 0 e 80 °C.'],
+    ['Oceani liquidi',e.liquid?'sì':(e.TC>100?'no, bollono':'no, ghiacciati'),'Servono come solvente per le reazioni chimiche.'],
+    ['Luminosità del Sole',Math.round(e.L*100)+'% di oggi','Il Sole giovane era più debole, ma la CO₂ e il metano compensavano.'],
+    ['CO₂',fmtP(S.co2),"Gas serra principale. L'erosione la rimuove lentamente, più in fretta a clima caldo."],
+    ['CH₄ (metano)',fmtP(S.ch4),"Gas serra potente, ma la foschia che forma oscura il cielo e raffredda un po'."],
+    ['H₂ (idrogeno)',fmtP(S.h2),'Gas riducente: alimenta la chimica e i microbi. Sfugge nello spazio.'],
+    ['pH del mare',e.pH.toFixed(1),"Più CO₂ = mare più acido. Tra 6 e 7,5 è plausibile per l'Eoarcheano."],
+    ['Foschia organica',Math.round(e.hz*100)+'%','Filtra i raggi UV, ma raffredda la superficie.'],
+    ['Raggi UV in superficie',Math.round(e.uv*100)+'%','Senza ozono arrivano sulle terre emerse: distruggono le molecole esposte.'],
+    ['Forza della marea',e.tideF.toFixed(1)+'× di oggi','La Luna era più vicina: maree più forti sulle spiagge.'],
+    ['Durata del giorno',e.dayH.toFixed(1)+' ore (nel gioco ~2 min)','Giorni più corti = più tempeste.'],
+    ['Calore del mantello',e.heat.toFixed(1)+'× di oggi','Più calore = più lava e più gas dai vulcani.']
+  ].map(x=>`<div title="${x[2]}">${x[0]}: <b>${x[1]}</b></div>`).join('');
+  $('#pool').innerHTML=[['Organici',S.org],['Peptidi',S.pep],['Nucleotidi',S.nuc],['Vescicole',S.ves],['Protocellule',S.proto],['Ammoniaca NH₃',S.nh3*1000],['Fosforo',S.p],['Ferro disciolto',S.fe],['Silice',S.si],['BIF depositate',S.bif],['Microbi (%)',S.bio*100]]
+    .map(x=>`<span class="chip">${x[0]} ${fmt(x[1])}</span>`).join('');
+  $('#bV0').disabled=CD.v0>0;$('#bV1').disabled=CD.v1>0;$('#bV2').disabled=CD.v2>0;
+  ['0','1','2'].forEach((i,k)=>{$('#bV'+i).textContent=CD['v'+i]>0?`🌋 ${['Nord','Centro','Sud'][k]} (${Math.ceil(CD['v'+i])} s)`:`🌋 Vulcano: ${['Nord','Centro','Sud'][k]}`});
+  $('#bMet').disabled=S.E<15||CD.met>0;
+  const gl=S.geoLv||0;
+  $('#bGeo').textContent=gl>=3?'⚡ Impianto geotermico: massimo':`⚡ Impianto geotermico ${gl}/3 (${GEO_COST[gl]} E)`;
+  $('#bGeo').disabled=gl>=3||S.E<GEO_COST[gl];
+  $('#bStorm').disabled=S.E<5;
+  $('#bFeed').disabled=S.E<10||S.bio<=0;
+  $('#bFix').disabled=S.E<10||S.T>3700;
+  $('#ebar').innerHTML=`${Math.round(S.E)}<small>E</small>`;
+  $('#erate').textContent=`+${passiveE().toFixed(2)} E/s`;
+  $('#log').innerHTML=S.log.slice(0,12).map(l=>`<div><small>−${ga(l.T)}</small> ${l.t}</div>`).join('');
+}
+
+/* ================= CICLO PRINCIPALE ================= */
+function frame(now){
+  const dt=Math.min(.1,(now-last)/1000);last=now;const t=now/1000;
+  drawOcean(t,dt);
+  for(const k in S.F)S.F[k]=Math.max(0,S.F[k]-dt);
+  for(const k in CD)CD[k]=Math.max(0,CD[k]-dt);
+  if(!S.paused&&!S.done){
+    S.dayPh=(S.dayPh+dt/DAY_S)%1;
+    const dMa=dt*SPAN/DUR,n=Math.max(1,Math.ceil(dMa/.05)),d=dMa/n;
+    for(let i=0;i<n&&!S.done;i++){
+      S.T=Math.max(T1,S.T-d);
+      tick(d);
+      for(const r of REF)if(S.T<=r[0]&&!S.seen[r[0]]){S.seen[r[0]]=1;logm(r[1])}
+      if(S.T<=T1){S.done=true;S.ok=goals().every(x=>x[1]>=x[2]);save();showEnd()}
+    }
+    passive(dt);
+  }
+  const e=env(),G=geo();
+  ensureWorld(G,dt);
+  stormV+=((S.F.storm>0?1:0)-stormV)*Math.min(1,dt*1.2);
+  flashA*=Math.exp(-dt*5);
+  effects(e,t,dt);
+  updParticles(dt);
+  updateScene(e,t,dt);
+  updRain(dt);updBolts(dt);updMeteors(dt);
+  placeLabels();
+  renderer.render(scene,camera);
+  ui();
+  saveT+=dt;if(saveT>5){saveT=0;save()}
+  requestAnimationFrame(frame);
+}
+
+/* ================= AVVIO ================= */
+function buildRefs(){
+  $('#refs').innerHTML=REF.map(r=>`<div>${r[1]}</div>`).join('');
+  const bar=document.querySelector('#bar');
+  for(const r of REF){
+    const pct=(T0-r[0])/SPAN*100;
+    if(pct<0||pct>100)continue;
+    const m=document.createElement('b');m.style.left=pct+'%';bar.appendChild(m);
+    const s=document.createElement('span');s.style.left=pct+'%';s.textContent=(r[0]/1000).toFixed(2).replace('.',',')+' Ga';bar.appendChild(s);
+  }
+}
+bgResize();
+addEventListener('resize',bgResize);
+fit();
+$('#go2').onclick=()=>{$('#end').hidden=true;document.dispatchEvent(new CustomEvent('eoarcheano:complete',{detail:{ok:S.ok,ev:S.ev,nErupt:S.nErupt}}))};
+$('#gclose').onclick=()=>{S.tut=true;save()};
+$('#bV0').onclick=()=>{act.erupt(0);save()};
+$('#bV1').onclick=()=>{act.erupt(1);save()};
+$('#bV2').onclick=()=>{act.erupt(2);save()};
+$('#bMet').onclick=()=>{dropMeteor();save()};
+$('#bGeo').onclick=()=>{buyGeo();save()};
+$('#bStorm').onclick=()=>{act.storm();save()};
+$('#bFeed').onclick=()=>{act.feed();save()};
+$('#bFix').onclick=()=>{act.fix();save()};
+buildRefs();
+if(S.done)showEnd();
+addEventListener('beforeunload',save);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
